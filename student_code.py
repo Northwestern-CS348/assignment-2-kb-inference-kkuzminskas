@@ -117,8 +117,103 @@ class KnowledgeBase(object):
             return []
 
 
+
+
+    def help_supports_facts_rules(self, fact_or_rule):
+        """Retract a supporting fact or rule from the KB for loop
+
+        Args:
+            fact (Fact) or rule (Rule) - Fact or Rule to be retracted
+
+        Returns:
+            None
+        """
+
+        if isinstance(fact_or_rule, Rule):
+            rule = fact_or_rule
+
+            # check facts supported by the rule that is being removed
+            for sup_f in rule.supports_facts:
+                #remove the [fact, rule] combo that was supported by the retracted fact
+                for fr in sup_f.supported_by:
+                    # fr is a [fact, rule]
+                    if rule in fr:
+                        kb_f = self._get_fact(fr[0])
+                        kb_f.supports_facts.remove(sup_f)
+
+                        kb_sup_f = self._get_fact(sup_f)
+                        kb_sup_f.supported_by.remove(fr)
+
+
+                # if the fact is unsupported and not asserted, remove the fact
+                if not kb_sup_f.supported_by:
+                    self.help_kb_remove(kb_sup_f)
+
+
+            # check the rules supported by the rule being removed
+            for sup_r in rule.supports_rules:
+                #remove the [fact, rule] combo that was supported by the retracted fact
+                for fr in sup_r.supported_by:
+                    # fr is a [fact, rule]
+                    if rule in fr:
+                        kb_f = self._get_rule(fr[0])
+                        kb_f.supports_facts.remove(sup_r)
+
+                        kb_sup_r = self._get_rule(sup_r)
+                        kb_sup_r.supported_by.remove(fr)
+
+
+                if not kb_sup_r.asserted:
+                    self.help_kb_remove(kb_sup_r)
+
+            # remove the retracted fact from the KB
+            self.rules.remove(rule)
+
+        else:
+            fact = fact_or_rule
+
+            # check facts supported by the fact that is being removed
+            for sup_f in fact.supports_facts:
+                #remove the [fact, rule] combo that was supported by the retracted fact
+                for fr in sup_f.supported_by:
+                    # fr is a [fact, rule]
+                    if fact in fr:
+                        kb_r = self._get_rule(fr[1])
+                        kb_r.supports_facts.remove(sup_f)
+
+                        kb_sup_f = self._get_fact(sup_f)
+                        kb_sup_f.supported_by.remove(fr)
+
+
+                # if the fact is unsupported and not asserted, remove the fact
+                if not kb_sup_f.supported_by:
+                    self.help_kb_remove(kb_sup_f)
+
+
+            # check the rules supported by the fact being removed
+            for sup_r in fact.supports_rules:
+                #remove the [fact, rule] combo that was supported by the retracted fact
+                for fr in sup_r.supported_by:
+                    # fr is a [fact, rule]
+                    if fact in fr:
+                        kb_r = self._get_rule(fr[1])
+                        kb_r.supports_rules.remove(sup_r)
+
+                        kb_sup_r = self._get_rule(sup_r)
+                        kb_sup_r.supported_by.remove(fr)
+
+                if not kb_sup_r.asserted:
+                    self.help_kb_remove(kb_sup_r)
+
+
+            # remove the retracted fact from the KB
+            self.facts.remove(fact)
+
+        return
+
+
     def help_kb_remove(self, fact_or_rule):
-        """Retract a fact or rule from the KB
+        """Retract a supporting fact or rule from the KB
 
         Args:
             fact (Fact) or rule (Rule) - Fact or Rule to be retracted
@@ -144,43 +239,7 @@ class KnowledgeBase(object):
                     if not rule.supported_by:
                         print("Rule is not supported. Rule is removed")
 
-
-                        # check facts supported by the rule that is being removed
-                        for sup_f in rule.supports_facts:
-                            #remove the [fact, rule] combo that was supported by the retracted fact
-                            for fr in sup_f.supported_by:
-                                # fr is a [fact, rule]
-                                if rule in fr:
-                                    kb_f = self._get_fact(fr[0])
-                                    kb_f.supports_facts.remove(sup_f)
-
-                                    kb_sup_f = self._get_fact(sup_f)
-                                    kb_sup_f.supported_by.remove(fr)
-
-
-                            # if the fact is unsupported and not asserted, remove the fact
-                            if not kb_sup_f.supported_by:
-                                self.help_kb_remove(kb_sup_f)
-
-
-                        # check the rules supported by the rule being removed
-                        for sup_r in rule.supports_rules:
-                            #remove the [fact, rule] combo that was supported by the retracted fact
-                            for fr in sup_r.supported_by:
-                                # fr is a [fact, rule]
-                                if rule in fr:
-                                    kb_f = self._get_rule(fr[0])
-                                    kb_f.supports_facts.remove(sup_r)
-
-                                    kb_sup_r = self._get_rule(sup_r)
-                                    kb_sup_r.supported_by.remove(fr)
-
-
-                            if not kb_sup_r.asserted:
-                                self.help_kb_remove(kb_sup_r)
-
-                        # remove the retracted fact from the KB
-                        self.rules.remove(rule)
+                        self.help_supports_facts_rules(rule)
 
 
             elif isinstance(fact_or_rule, Fact):
@@ -196,43 +255,8 @@ class KnowledgeBase(object):
                 if not fact.supported_by:
                     print("Fact was removed. Fact was not supported.")
 
+                    self.help_supports_facts_rules(fact)
 
-                    # check facts supported by the fact that is being removed
-                    for sup_f in fact.supports_facts:
-                        #remove the [fact, rule] combo that was supported by the retracted fact
-                        for fr in sup_f.supported_by:
-                            # fr is a [fact, rule]
-                            if fact in fr:
-                                kb_r = self._get_rule(fr[1])
-                                kb_r.supports_facts.remove(sup_f)
-
-                                kb_sup_f = self._get_fact(sup_f)
-                                kb_sup_f.supported_by.remove(fr)
-
-
-                        # if the fact is unsupported and not asserted, remove the fact
-                        if not kb_sup_f.supported_by:
-                            self.help_kb_remove(kb_sup_f)
-
-
-                    # check the rules supported by the fact being removed
-                    for sup_r in fact.supports_rules:
-                        #remove the [fact, rule] combo that was supported by the retracted fact
-                        for fr in sup_r.supported_by:
-                            # fr is a [fact, rule]
-                            if fact in fr:
-                                kb_r = self._get_rule(fr[1])
-                                kb_r.supports_rules.remove(sup_r)
-
-                                kb_sup_r = self._get_rule(sup_r)
-                                kb_sup_r.supported_by.remove(fr)
-
-                        if not kb_sup_r.asserted:
-                            self.help_kb_remove(kb_sup_r)
-
-
-                    # remove the retracted fact from the KB
-                    self.facts.remove(fact)
 
                 else:
                     print("Fact was supported. Fact wasn't removed")
@@ -276,42 +300,7 @@ class KnowledgeBase(object):
                 if not fact.supported_by:
                     print("Fact was removed. Fact was not supported.")
 
-
-                    # check facts supported by the fact that is being removed
-                    for sup_f in fact.supports_facts:
-                        #remove the [fact, rule] combo that was supported by the retracted fact
-                        for fr in sup_f.supported_by:
-                            # fr is a [fact, rule]
-                            if fact in fr:
-                                kb_r = self._get_rule(fr[1])
-                                kb_r.supports_facts.remove(sup_f)
-
-                                kb_sup_f = self._get_fact(sup_f)
-                                kb_sup_f.supported_by.remove(fr)
-
-
-                        # if the fact is unsupported and not asserted, remove the fact
-                        if not kb_sup_f.supported_by:
-                            self.help_kb_remove(kb_sup_f)
-                            #self.facts.remove(sup_f)
-
-                    # check the rules supported by the fact being removed
-                    for sup_r in fact.supports_rules:
-                        #remove the [fact, rule] combo that was supported by the retracted fact
-                        for fr in sup_r.supported_by:
-                            # fr is a [fact, rule]
-                            if fact in fr:
-                                kb_r = self._get_rule(fr[1])
-                                kb_r.supports_rules.remove(sup_r)
-
-                                kb_sup_r = self._get_rule(sup_r)
-                                kb_sup_r.supported_by.remove(fr)
-
-                        if not kb_sup_r.asserted:
-                            self.help_kb_remove(kb_sup_r)
-
-                    # remove the retracted fact from the KB
-                    self.facts.remove(fact)
+                    self.help_supports_facts_rules(fact)
 
                 else:
                     print("Fact was supported. Fact wasn't removed")
