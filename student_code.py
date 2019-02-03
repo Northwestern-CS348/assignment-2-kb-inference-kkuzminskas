@@ -160,7 +160,7 @@ class KnowledgeBase(object):
 
                             # if the fact is unsupported and not asserted, remove the fact
                             if not kb_sup_f.supported_by:
-                                self.kb_retract(kb_sup_f)
+                                self.help_kb_remove(kb_sup_f)
 
 
                         # check the rules supported by the rule being removed
@@ -177,12 +177,10 @@ class KnowledgeBase(object):
 
 
                             if not kb_sup_r.asserted:
-                                self.kb_retract(kb_sup_r)
+                                self.help_kb_remove(kb_sup_r)
 
                         # remove the retracted fact from the KB
                         self.rules.remove(rule)
-
-
 
 
             elif isinstance(fact_or_rule, Fact):
@@ -214,8 +212,8 @@ class KnowledgeBase(object):
 
                         # if the fact is unsupported and not asserted, remove the fact
                         if not kb_sup_f.supported_by:
-                            self.kb_retract(kb_sup_f)
-                            #self.facts.remove(sup_f)
+                            self.help_kb_remove(kb_sup_f)
+
 
                     # check the rules supported by the fact being removed
                     for sup_r in fact.supports_rules:
@@ -230,8 +228,8 @@ class KnowledgeBase(object):
                                 kb_sup_r.supported_by.remove(fr)
 
                         if not kb_sup_r.asserted:
-                            self.kb_retract(kb_sup_r)
-                            #self.rules.remove(sup_r)
+                            self.help_kb_remove(kb_sup_r)
+
 
                     # remove the retracted fact from the KB
                     self.facts.remove(fact)
@@ -311,7 +309,7 @@ class KnowledgeBase(object):
 
                         if not kb_sup_r.asserted:
                             self.help_kb_remove(kb_sup_r)
-                            
+
                     # remove the retracted fact from the KB
                     self.facts.remove(fact)
 
