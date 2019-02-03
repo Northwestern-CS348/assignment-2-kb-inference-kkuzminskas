@@ -226,12 +226,14 @@ class KnowledgeBase(object):
         if not isinstance(fact_or_rule, Fact) and not isinstance(fact_or_rule, Rule):
             print("Error: Input was not a fact or Rule")
             return
+            
         else:
             #asserted rules are never retracted, check to make sure
             if isinstance(fact_or_rule, Rule):
                 if fact_or_rule.asserted:
                     print("Error: asserted rules can't be retracted.")
                     return
+
                 else:
                     rule = self._get_rule(fact_or_rule)
 
